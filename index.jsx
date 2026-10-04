@@ -8,14 +8,15 @@ const INITIAL_VALUES = {
   password: "",
   passwordConf: "",
 };
-const LOGINFORM_REG = {
+
+const SIGNUPFORM_REG = {
   fullName: /^[a-zA-Z']+\s+[a-zA-Z']+\s*$/,
-  email: /^.+@.+$/,
+  email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
   password: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
   passwordConf: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
 };
 
-export default class SingUpForm extends Component {
+export default class SignUpForm extends Component {
   constructor(props) {
     super(props);
 
@@ -33,24 +34,105 @@ export default class SingUpForm extends Component {
     };
   }
 
-  handleFullNameChange = (e) => {
-    const value = e.target.value;
+  handleFullNameChange = ({ target: { value } }) => {
     this.setState({
       fullName: value,
-      isFullNameValid: LOGINFORM_REG.fullName.test(value),
+      isFullNameValid: SIGNUPFORM_REG.fullName.test(value),
     });
   };
 
-  handleCheckboxChange = (e) => {
-    this.setState({ isAgreed: e.target.checked });
+  handleEmailChange = ({ target: { value } }) => {
+    this.setState({
+      email: value,
+      isEmailValid: SIGNUPFORM_REG.email.test(value),
+    });
+  };
+
+  handlePasswordChange = ({ target: { value } }) => {
+    this.setState({
+      password: value,
+      isPasswordValid: SIGNUPFORM_REG.password.test(value),
+    });
+  };
+
+  handlePasswordConfChange = ({ target: { value } }) => {
+    const isValidRegex = SIGNUPFORM_REG.passwordConf.test(value);
+    const isMatching = value === this.state.password;
+
+    this.setState({
+      passwordConf: value,
+      isPasswordConfValid: isValidRegex && isMatching,
+    });
+  };
+
+  handleCheckboxChange = ({ target: { checked } }) => {
+    this.setState({ isAgreed: checked });
+  };
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+
+    const {
+      isFullNameValid,
+      isEmailValid,
+      isPasswordValid,
+      isPasswordConfValid,
+      isAgreed,
+    } = this.state;
+
+    if (
+      isFullNameValid &&
+      isEmailValid &&
+      isPasswordValid &&
+      isPasswordConfValid &&
+      isAgreed
+    ) {
+      console.log("Account create ", this.state);
+
+      this.setState({
+        ...INITIAL_VALUES,
+        isAgreed: false,
+        isFullNameValid: false,
+        isEmailValid: false,
+        isPasswordValid: false,
+        isPasswordConfValid: false,
+      });
+    } else {
+      alert("Error");
+    }
   };
 
   render() {
-    const { fullName, isFullNameValid } = this.state;
+    const {
+      fullName,
+      email,
+      password,
+      passwordConf,
+      isAgreed,
+      isFullNameValid,
+      isEmailValid,
+      isPasswordValid,
+      isPasswordConfValid,
+    } = this.state;
 
     const fullNameClassName = classNames(styles.input, {
       [styles.inputValid]: fullName && isFullNameValid,
       [styles.inputInvalid]: fullName && !isFullNameValid,
+    });
+
+    const emailClassName = classNames(styles.input, {
+      [styles.inputValid]: email && isEmailValid,
+      [styles.inputInvalid]: email && !isEmailValid,
+    });
+
+    const passwordClassName = classNames(styles.input, {
+      [styles.inputValid]: password && isPasswordValid,
+      [styles.inputInvalid]: password && !isPasswordValid,
+    });
+
+    const passwordConfClassName = classNames(styles.input, {
+      [styles.inputValid]: passwordConf && isPasswordConfValid,
+      [styles.inputInvalid]: passwordConf && !isPasswordConfValid,
     });
 
     return (
@@ -58,65 +140,60 @@ export default class SingUpForm extends Component {
         <div className={styles.card}>
           <h1 className={styles.title}>Create Your Account</h1>
 
-          <form>
+          <form onSubmit={this.handleSubmit}>
             <label className={styles.inputGroup}>
               <input
                 type="text"
-                value={fullName}
-                autoFocus
-                onChange={this.handleFullNameChange}
                 name="fullName"
                 placeholder="Full Name"
+                value={fullName}
                 className={fullNameClassName}
+                onChange={this.handleFullNameChange}
+                autoFocus
               />
             </label>
-
             <label className={styles.inputGroup}>
               <input
                 type="email"
-                value={this.state.email}
-                onChange={this.handleChange}
                 name="email"
                 placeholder="Email Address"
-                className={styles.input}
+                value={email}
+                className={emailClassName}
+                onChange={this.handleEmailChange}
               />
             </label>
-
             <label className={styles.inputGroup}>
               <input
                 type="password"
-                value={this.state.password}
-                onChange={this.handleChange}
                 name="password"
                 placeholder="Password"
-                className={styles.input}
+                value={password}
+                className={passwordClassName}
+                onChange={this.handlePasswordChange}
               />
             </label>
-
             <label className={styles.inputGroup}>
               <input
                 type="password"
-                value={this.state.passwordConf}
-                onChange={this.handleChange}
                 name="passwordConf"
                 placeholder="Confirm Password"
-                className={styles.input}
+                value={passwordConf}
+                className={passwordConfClassName}
+                onChange={this.handlePasswordConfChange}
               />
             </label>
-
             <label className={styles.checkboxContainer}>
               <input
                 type="checkbox"
-                onChange={this.handleCheckboxChange}
-                checked={this.state.isAgreed}
                 name="isAgreed"
                 className={styles.checkboxInput}
+                checked={isAgreed}
+                onChange={this.handleCheckboxChange}
               />
               <span className={styles.checkboxText}>
                 I Agree All Statements In Terms Of Service
               </span>
             </label>
-
             <button type="submit" className={styles.submitBtn}>
               Sign Up
             </button>
